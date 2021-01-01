@@ -15,6 +15,7 @@ limitations under the License.
 '''
 
 from collections import OrderedDict
+from functools import partial
 from typing import Callable, Union
 
 __all__ = []
@@ -45,9 +46,17 @@ class NoDuplicateOrderedDict(OrderedDict):
             raise NameError(f'{k} is already defined')
         return super().__setitem__(k, v)
 
-from . import lazy_import
-from . import descriptor
-from . import struct
-from . import import_utils
-from . import type_importer
-from . import struct_importer
+def load(**options):
+    get = partial(options.get, default=False)
+    if get('lazy'):
+        from . import lazy_import
+    
+    from . import descriptor
+    from . import struct
+    from . import import_utils
+
+    if get('types') or get('structs'):
+        from . import type_importer
+
+    if get('structs'):
+        from . import struct_importer
