@@ -1,0 +1,129 @@
+<types>
+	<type name="Typed">
+		<field name="ty" type="type">object</field>
+		<set>
+			if not isinstance(value, self.ty):
+				raise TypeError(f'Expected {self.ty.__qualname__} (got {type(value).__qualname__})')
+		</set>
+	</type> <!-- Typed -->
+
+	<type name="Sized">
+		<param name="minlen" type="int" default="0" />
+		<param name="maxlen" type="int" default="None" />
+
+		<set>
+			if self.maxlen is not None and len(value) &gt; self.maxlen: raise ValueError('Too long')
+			if len(value) &lt; self.minlen: raise ValueError('Too short')
+		</set>
+	</type> <!-- Sized -->
+
+	<group name="numeric">
+		<group name="type-checking">
+			<type name="Number" base="Typed">
+				<!--
+					No complex here so that comparison operators
+					(<, >, etc.) can be used
+				-->
+				<field name="ty" type="tuple[type,type]">int, float,</field>
+			</type> <!-- Number -->
+
+			<type name="Integer" base="Number">
+				<field name="ty" type="type">int</field>
+			</type> <!-- Integer -->
+
+			<type name="Float" base="Number" />
+			<type name="StrongFloat" base="Float">
+				<field name="ty" type="type">float</field>
+			</type> <!-- StrongFloat -->
+
+			<type name="Complex" base="Number">
+				<field name="ty" type="tuple[type,type,type]">int, float, complex,</field>
+			</type> <!-- Complex -->
+			<type name="StrongComplex" base="Complex">
+				<field name="ty" type="type">complex</field>
+			</type> <!-- StrongComplex -->
+		</group> <!-- type-checking -->
+
+		<group name="data-validation">
+			<type name="Positive">
+				<set>
+					if value &lt;= 0: raise ValueError(f'Must be &gt; 0 (got {value})')
+				</set>
+			</type> <!-- Positive -->
+			<type name="negative">
+				<set>
+					if value &gt;= 0: raise ValueError(f'Must be &lt; 0 (got {value})')
+				</set>
+			</type> <!-- Negative -->
+			
+			<type name="NonNegative">
+				<set>
+					if value &lt; 0: raise ValueError(f'Must be &gt;= 0 (got {value})')
+				</set>
+			</type> <!-- NonNegative -->
+			<type name="NonPositive">
+				<set>
+					if value &gt; 0: raise ValueError(f'Must be &lt;= 0 (got {value})')
+				</set>
+			</type> <!-- NonPositive -->
+			
+			<type name="NonZero">
+				<set>
+					if value == 0: raise ValueError(f'Must be != 0 (got {value})')
+				</set>
+			</type> <!-- NonZero -->
+		</group> <!-- data-validation -->
+
+		<group name="combinations">
+			<type name="PositiveNumber"    base="Number, Positive"    />
+			<type name="NegativeNumber"    base="Number, Negative"    />
+			<type name="NonNegativeNumber" base="Number, NonNegative" />
+			<type name="NonPositiveNumber" base="Number, NonPositive" />
+			<type name="NonZeroNumber"     base="Number, NonZero"     />
+			
+			<type name="PositiveInteger"    base="Integer, Positive"    />
+			<type name="NegativeInteger"    base="Integer, Negative"    />
+			<type name="NonNegativeInteger" base="Integer, NonNegative" />
+			<type name="NonPositiveInteger" base="Integer, NonPositive" />
+			<type name="NonZeroInteger"     base="Integer, NonZero"     />
+			
+			<type name="PositiveFloat"    base="Float, Positive"    />
+			<type name="NegativeFloat"    base="Float, Negative"    />
+			<type name="NonNegativeFloat" base="Float, NonNegative" />
+			<type name="NonPositiveFloat" base="Float, NonPositive" />
+			<type name="NonZeroFloat"     base="Float, NonZero"     />
+			
+			<type name="PositiveSFloat"    base="StrongFloat, Positive"    />
+			<type name="NegativeSFloat"    base="StrongFloat, Negative"    />
+			<type name="NonNegativeSFloat" base="StrongFloat, NonNegative" />
+			<type name="NonPositiveSFloat" base="StrongFloat, NonPositive" />
+			<type name="NonZeroSFloat"     base="StrongFloat, NonZero"     />
+			
+			<type name="NonZeroComplex"  base="Complex, NonZero"       />
+			<type name="NonZeroSComplex" base="StrongComplex, NonZero" />
+		</group> <!-- combinations -->
+	</group> <!-- numeric -->
+
+	<group name="string">
+		<type name="String" base="Typed">
+			<field name="ty" type="type">str</field>
+		</type> <!-- String -->
+
+		<type name="Regex">
+			<import src="re" />
+
+			<param name="pat" type="str">
+				self.pat = re.compile(pat)
+				self._pat = pat
+			</param>
+
+			<set>
+				if not self.pat.match(value):
+					raise ValueError(f'Input (\'{value}\') doesn\'t match the required pattern (r\'{self._pat}\')')
+			</set>
+		</type> <!-- Regex -->
+
+		<type name="SizedString" base="String, Sized" />
+		<type name="SizedRegexString" base="SizedString, Regex" />
+	</group> <!-- string -->
+</types>
