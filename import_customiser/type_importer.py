@@ -131,7 +131,7 @@ class _Type:
 		self.params = (_Param(param) for param in elem.findall('param'))
 		self.imports = (_Import(imp) for imp in elem.findall('import'))
 
-		self.set_code = elem.find('set_code')
+		self.set_code = elem.find('set')
 		if self.set_code:
 			self.set_code = _dedent(self.set_code.text)
 
