@@ -44,3 +44,10 @@ class NoDuplicateOrderedDict(OrderedDict):
         if k in self:
             raise NameError(f'{k} is already defined')
         return super().__setitem__(k, v)
+
+from . import lazy_import
+from . import descriptor
+from . import struct
+from . import import_utils
+from . import type_importer
+from . import struct_importer
