@@ -15,12 +15,12 @@ limitations under the License.
 '''
 
 from collections import OrderedDict
-from typing import Union
+from typing import Callable, Union
 
 __all__ = []
 
 
-def export(item: Union[type, function]) -> Union[type, function]:
+def export(item: Union[type, Callable]) -> Union[type, Callable]:
     '''Export the decorated item
     Adds it to __all__ and globals
 
