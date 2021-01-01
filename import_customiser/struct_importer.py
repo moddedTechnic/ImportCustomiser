@@ -15,19 +15,19 @@ limitations under the License.
 '''
 
 from types import ModuleType
-from xml.etree.ElementTree import Element, parse
+from xml.etree.ElementTree import Element, fromstring
 
 from .import_utils import ImportBase
 
 from .struct import Struct
 
 
-def _xml_to_code(filename):
-	doc = parse(filename)
+def _xml_to_code(data: str):
+	root = fromstring(data)
 
-	code += 'import type_importer\n'
+	code = 'import type_importer\n'
 
-	imports = doc.findall('import')
+	imports = root.findall('import')
 	for import_ in imports:
 		src = import_.get('src')
 
@@ -47,13 +47,13 @@ def _xml_to_code(filename):
 			import_stmt = 'import ' + src
 		code += import_stmt + '\n'
 
-	structures = doc.findall('structure')
+	structures = root.findall('structure')
 	if structures:
 		for st in structures:
 			code += _xml_struct_code(st)
 		return code
 
-	fields = doc.findall('field')
+	fields = root.findall('field')
 	if fields:
 		code += _xml_struct_code
 		return code
@@ -101,7 +101,9 @@ class StructImporter(ImportBase):
 
 	@staticmethod
 	def populate_module(module: ModuleType, filename: str) -> ModuleType:
-		code = _xml_to_code(filename)
+		with open(filename, 'r') as f:
+			data = f.read()
+		code = _xml_to_code(data)
 		module.__dict__['Struct'] = Struct
 		exec(code, module.__dict__, module.__dict__)
 		return module

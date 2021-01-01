@@ -16,7 +16,7 @@ limitations under the License.
 
 from functools import partial
 from types import ModuleType
-from xml.etree.ElementTree import Element, parse
+from xml.etree.ElementTree import Element, parse, fromstring
 
 from .descriptor import Descriptor
 from .import_utils import ImportBase
@@ -174,9 +174,8 @@ class _Type:
 		return code
 
 
-def _import(filename):
-	doc = parse(filename)
-	root = doc.getroot()
+def _import(data: str):
+	root = fromstring(data)
 
 	if root.tag == 'types':
 		types = (_Type(elem) for elem in _get_types(root))
@@ -198,7 +197,9 @@ class TypeImporter(ImportBase):
 
 	@staticmethod
 	def populate_module(module: ModuleType, filename: str) -> ModuleType:
-		code = _import(filename)
+		with open(filename, 'r') as f:
+			data = f.read()
+		code = _import(data)
 		module.__dict__['Descriptor'] = Descriptor
 		exec(code, module.__dict__, module.__dict__)
 		return module
