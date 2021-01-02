@@ -46,7 +46,7 @@ class _UrlFinder:
         self.baseuri = baseuri
         self.filenames = filenames
 
-    def fins_spec(self, modname, target=None):
+    def find_spec(self, modname, target=None):
         for extension, loader in loaders.items():
             if f'{modname}.{extension}' in self.filenames:
                 origin = self.baseuri = '/' + modname + '.' + extension
