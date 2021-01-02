@@ -9,6 +9,8 @@ from sys import path, platform
 from tempfile import TemporaryFile
 from typing import Union
 
+from . import export
+
 
 '''Windows-specific error code indicating an invalid pathname.
 
@@ -20,6 +22,7 @@ https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
 ERROR_INVALID_NAME: int = 123
 
 
+@export
 def is_pathname_valid(pathname: Union[str, bytes], encoding: str = None) -> bool:
     '''
     Check if the given pathname is valid\n
@@ -46,8 +49,10 @@ def is_pathname_valid(pathname: Union[str, bytes], encoding: str = None) -> bool
         # Directory guaranteed to exist. If the current OS is Windows, this is
         # the drive to which Windows was installed (e.g., the "%HOMEDRIVE%"
         # environment variable); else, the typical root directory.
-        root_dirname = environ.get('HOMEDRIVE', 'C:') if platform == 'win32' else sep
-        assert isdir(root_dirname), 'Couldn\'t get root directory'   # ...Murphy and her ironclad Law
+        root_dirname = environ.get(
+            'HOMEDRIVE', 'C:') if platform == 'win32' else sep
+        # ...Murphy and her ironclad Law
+        assert isdir(root_dirname), 'Couldn\'t get root directory'
 
         # Append a path separator to this directory if needed.
         root_dirname = root_dirname.rstrip(sep) + sep
@@ -91,6 +96,7 @@ def is_pathname_valid(pathname: Union[str, bytes], encoding: str = None) -> bool
     # (e.g., a bug). Permit this exception to unwind the call stack.
 
 
+@export
 def is_path_creatable(pathname: Union[str, bytes], encoding: str = None) -> bool:
     '''
     Check if the given path can be created\n
@@ -111,6 +117,7 @@ def is_path_creatable(pathname: Union[str, bytes], encoding: str = None) -> bool
     return access(dirname, W_OK)
 
 
+@export
 def is_path_exists_or_creatable(pathname: Union[str, bytes], encoding: str = None) -> bool:
     '''
     - `True` if the passed pathname is a valid pathname for the current OS _and_
@@ -135,6 +142,7 @@ def is_path_exists_or_creatable(pathname: Union[str, bytes], encoding: str = Non
         return False
 
 
+@export
 def is_path_sibling_creatable(pathname: Union[str, bytes], encoding: str = None) -> bool:
     '''
     `True` if the current user has sufficient permissions to create **siblings**
@@ -162,6 +170,7 @@ def is_path_sibling_creatable(pathname: Union[str, bytes], encoding: str = None)
         return False
 
 
+@export
 def is_path_exists_or_creatable_portable(pathname: Union[str, bytes], encoding: str = None) -> bool:
     '''
     `True` if the passed pathname is a valid pathname on the current OS _and_
@@ -173,7 +182,7 @@ def is_path_exists_or_creatable_portable(pathname: Union[str, bytes], encoding: 
 
     if isinstance(pathname, bytes):
         pathname.decode(encoding)
-        
+
     try:
         # To prevent "os" module calls from raising undesirable exceptions on
         # invalid pathnames, is_pathname_valid() is explicitly called first.
